@@ -10,10 +10,10 @@ abstract class Expr {
         R visitUnaryExpr(Unary expr);
     }
     static class Binary extends Expr {
-        Binary(Expr left, Token operator, Expr Right) {
+        Binary(Expr left, Token operator, Expr right) {
             this.left = left;
             this.operator = operator;
-            this.Right = Right;
+            this.right = right;
     }
 
     @Override
@@ -23,7 +23,7 @@ abstract class Expr {
 
     final Expr left;
     final Token operator;
-    final Expr Right;
+    final Expr right;
     }
     static class Grouping extends Expr {
         Grouping(Expr expression) {

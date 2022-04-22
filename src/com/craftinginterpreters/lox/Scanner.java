@@ -164,9 +164,11 @@ public class Scanner {
         if (isAtEnd()) {
             return false;
         }
-        if (source.charAt(current++) != expected) {
+        if (source.charAt(current) != expected) {
             return false;
         }
+
+        current++;
         return true;
     }
 
