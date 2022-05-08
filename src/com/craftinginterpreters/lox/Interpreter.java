@@ -1,6 +1,8 @@
 package com.craftinginterpreters.lox;
 
-public class Interpreter implements Expr.Visitor<Object>{
+import java.util.List;
+
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitLiteralExpr(Expr.Literal expr) {
@@ -51,6 +53,23 @@ public class Interpreter implements Expr.Visitor<Object>{
         return expr.accept(this);
     }
 
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
+    }
+
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
         Object left = evaluate(expr.left);
@@ -76,7 +95,7 @@ public class Interpreter implements Expr.Visitor<Object>{
                 if (left instanceof Double && right instanceof Double) {
                     return (double)left + (double)right;
                 }
-                if (left instanceof String) {
+                if (left instanceof String && right != null) {
                     return (String)left + right.toString();
                 }
                 throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
@@ -113,22 +132,24 @@ public class Interpreter implements Expr.Visitor<Object>{
         throw new RuntimeError(operator,"Operands must be numbers.");
     }
 
-    void interpret(Expr expression) {
+    void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
     }
+
     private String stringify(Object object) {
         if (object == null) {
             return "nil";
         }
         if (object instanceof Double || object instanceof String) {
             String text = object.toString();
-            if (text.endsWith(".0")) {
-                text = text.substring(0, text.length() - 2);
+            if (text.contains(".0")) {
+                text = text.replace(".0","");
             }
             return text;
         }
